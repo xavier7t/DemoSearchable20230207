@@ -8,14 +8,44 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+    
+    @StateObject private var vm = ViewModel()
+    
+    @State private var searchText: String = ""
+    
+    //-------New lines: filteredPersons to be used in ForEach
+    var filteredPersons: [Person] {
+        if searchText == "" {
+            //show all persons if no searchText input
+            return vm.persons
+        } else {
+            return vm.persons.filter { person in
+                
+                //filter the persons by name or age
+                person.name.lowercased().contains(searchText.lowercased()) // comparing the lowercased texts
+                ||
+                "\(person.age)".contains(searchText) // comparing the input against the person’s age as a text
+            }
         }
-        .padding()
+    }
+    
+    var body: some View {
+        NavigationView {
+            List {
+                //-------Changed line: data source should now be the filteredPersons array
+                ForEach(filteredPersons, id: \.self) { person in
+                    HStack {
+                        Text(person.name)
+                            .bold()
+                        Spacer()
+                        Text("\(person.age)")
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .navigationTitle("Persons")
+            .searchable(text: $searchText)
+        }
     }
 }
 
